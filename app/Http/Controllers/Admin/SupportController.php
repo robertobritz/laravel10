@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\DTO\CreateSupportDTO;
+use App\DTO\UpdateSupportDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUpdateSupport;
 use App\Models\Support;
@@ -49,12 +51,16 @@ class SupportController extends Controller
         // dd($request->get('body')); // Retorna somente um campo body
         // dd($request->get('xxxx', 'defaut')); // Se não encontrar o campo xxxx, traz um valor padrão no caso 'defaut'
 
-        $data = $request->all();
-        $data['status'] = 'a'; // status é uma variável que não veio do form, assim precisamos setar. Note que $data é um array e desta forma adicionamos um item a esta array
-        //dd($data);
-        //Support::create($data); método sem injetar a model no método
-        $support = $support->create($data); // cria um objeto de support
+        // $data = $request->all();
+        // $data['status'] = 'a'; // status é uma variável que não veio do form, assim precisamos setar. Note que $data é um array e desta forma adicionamos um item a esta array
+        // dd($data);
+        // Support::create($data); método sem injetar a model no método
+        // $support = $support->create($data); // cria um objeto de support
         //dd($support);
+
+        $this->service->new(
+            CreateSupportDTO::makeFromRequest($request)
+        );
 
         return redirect()->route('supports.index');
     }
@@ -72,17 +78,23 @@ class SupportController extends Controller
 
     public function update(StoreUpdateSupport $request, Support $support, string $id)
     {
-        if (!$support = $support->where('id', $id)->first()) { 
-            return redirect()->back();
-        }
+        // if (!$support = $support->where('id', $id)->first()) { 
+        //     return redirect()->back();
+        // }
         //Alternativa para cadastro, neste caso, edita especificamente cada variável e no final precisa ser salvo.
         // $support->subject = $request->subject;
         // $support->body = $request->body;
         // $support->save(); 
 
-        $support->update($request->only([ // serve para definir quais campos serão atualizados
-            'subject', 'body'
-        ]));
+        // $support->update($request->only([ // serve para definir quais campos serão atualizados
+        //     'subject', 'body'
+        // ]));
+        $support = $this->service->update(
+            UpdateSupportDTO::makeFromRequest($request)
+        );
+        if (!$support) { 
+            return redirect()->back();
+        }
 
         return redirect()->route('supports.index');
     }
