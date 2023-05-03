@@ -5,16 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUpdateSupport;
 use App\Models\Support;
+use App\Services\SupportService;
 use Illuminate\Http\Request;
 
 class SupportController extends Controller
 {
-    public function index(Support $support) // Coloco a classe e já injeto a dependência.
+    public function __construct(
+        protected SupportService $service
+    ){}
+
+    public function index(Request $request) // Coloco a classe e já injeto a dependência.
     {
         //$support = Support::all();
         //$support = new Support(); // não precisa pois já injetei a dependencia na chamada do método
-        $supports = $support->all(); // uma coléction, uma array de informações
-        //dd($support);
+        //$supports = $support->all(); // uma coléction, uma array de informações
+        $support = $this->service->getAll($request->filter); // UTILIZANDO O SERVICE
         return view('admin.supports.index', compact('supports')); // compact serve para mandar o objeto para a view blade
     }
 
@@ -22,7 +27,8 @@ class SupportController extends Controller
     {
         //$support = Support::where('id', $id)->first(); // define qual a coluna no DB que irá pesquisar, depois informa a variável
                                             //find($id), serve para buscar apenas um objeto daquela ID
-        if (!$support = Support::find($id)) { // serve para verificar se existe a ID que foi informado, se não encontrar, irá retornar
+        //if (!$support = Support::find($id)) { // serve para verificar se existe a ID que foi informado, se não encontrar, irá retornar
+        if (!$support = $this->service->findOne($id)) { // Utilizando agora o SERVICE
             return redirect()->back();
         };
         
@@ -53,9 +59,10 @@ class SupportController extends Controller
         return redirect()->route('supports.index');
     }
 
-    public function edit(Support $support, string $id)
+    public function edit(string $id)
     {
-        if (!$support = $support->where('id', $id)->first()) { 
+        //if (!$support = $support->where('id', $id)->first()) { //Método padrão
+        if (!$support = $this->service->findOne($id)) { 
             return redirect()->back();
         }
         //dd($support);
@@ -80,13 +87,14 @@ class SupportController extends Controller
         return redirect()->route('supports.index');
     }
 
-    public function destroy(string $id, Support $support)
+    public function destroy(string $id)
     {
-        if (!$support = $support->where('id', $id)->first()) { 
-            return redirect()->back();
-        }
-        
-        $support->delete();
+        // if (!$support = $support->where('id', $id)->first()) {  // método padrão MVC Falta injetar a dependencia
+        //        return redirect()->back();
+        // }
+        // $support->delete();
+
+        $this->service->delete($id);
 
         return redirect()->route('supports.index');
 
