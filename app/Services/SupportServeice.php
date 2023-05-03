@@ -4,16 +4,15 @@ namespace App\Services;
 
 use App\DTO\CreateSupportDTO;
 use App\DTO\UpdateSupportDTO;
+use app\Repositories\SupportRepositoryInterface;
 use stdClass;
 
 class SupportService //elo do nosso repositório para o nossos controllers
 {
-    protected $repository;
-
-    public function __construct()
-    {
-        
-    }
+    public function __construct(
+        protected SupportRepositoryInterface $repository,
+    )
+    {}
     
     public function getAll(string $filter = null): array
     {
